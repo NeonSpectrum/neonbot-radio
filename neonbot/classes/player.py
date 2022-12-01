@@ -70,15 +70,13 @@ class Player:
         except IndexError:
             pass
 
-    async def connect(self):
+    async def connect(self, channel: discord.VoiceChannel):
         if self.connection:
             return
 
-        channel_id = self.settings.get('channel_id', self.ctx.author.voice.channel.id)
+        await channel.connect()
 
-        await self.ctx.guild.get_channel(channel_id).connect()
-
-        log.cmd(self.ctx, t('music.player_connected', channel=self.ctx.author.voice.channel))
+        log.cmd(self.ctx, t('music.player_connected', channel=channel))
 
     async def disconnect(self, force=True) -> None:
         if self.connection and self.connection.is_connected():

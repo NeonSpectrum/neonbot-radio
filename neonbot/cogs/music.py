@@ -35,7 +35,15 @@ class Music(commands.Cog):
                 return
 
         if not player.connection:
-            await player.connect()
+            channel_id = player.settings.get('channel_id',
+                                             interaction.user.voice.channel.id if interaction.user.voice else None)
+            channel = interaction.guild.get_channel(channel_id)
+
+            if not channel:
+                await interaction.response.send_message(embed=Embed(t('music.no_channel')), ephemeral=True)
+                return
+
+            await player.connect(channel)
             await interaction.response.send_message(
                 embed=Embed(t("music.player_connected", channel=interaction.channel.mention))
             )
