@@ -45,7 +45,7 @@ class Music(commands.Cog):
 
             await player.connect(channel)
             await interaction.response.send_message(
-                embed=Embed(t("music.player_connected", channel=channel.mention))
+                embed=Embed('🔊 ' + t("music.player_connected", channel=channel.mention))
             )
         else:
             shutil.rmtree(YOUTUBE_TMP_DIR, ignore_errors=True)
@@ -103,7 +103,7 @@ class Music(commands.Cog):
 
         await player.settings.update({'channel_id': channel.id})
         await interaction.response.send_message(
-            embed=Embed(t('music.channel_bind', channel=channel.mention))
+            embed=Embed('🔊 ' + t('music.channel_bind', channel=channel.mention))
         )
 
 
