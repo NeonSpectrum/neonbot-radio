@@ -97,6 +97,7 @@ class Player:
                 before_options=None if not self.now_playing['is_live'] else FFMPEG_OPTIONS,
             )
             self.connection.play(source, after=lambda e: self.loop.create_task(self.after(error=e)))
+            self.state = PlayerState.PLAYING
 
         except Exception as error:
             msg = str(error)
