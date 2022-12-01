@@ -8,7 +8,6 @@ from discord import app_commands
 from discord.ext import commands
 from i18n import t
 
-from neonbot import bot
 from neonbot.classes.embed import Embed
 from neonbot.classes.player import Player
 from neonbot.classes.spotify import Spotify
@@ -16,29 +15,9 @@ from neonbot.classes.youtube import Youtube
 from neonbot.utils.constants import ICONS, YOUTUBE_REGEX, SPOTIFY_REGEX, YOUTUBE_TMP_DIR
 
 
-async def in_voice(interaction: discord.Interaction) -> bool:
-    if await bot.is_owner(interaction.user) and interaction.command.name == "reset":
-        return True
-
-    if not interaction.user.voice:
-        await interaction.response.send_message(embed=Embed("You need to be in the channel."), ephemeral=True)
-        return False
-    return True
-
-
-async def has_player(interaction: discord.Interaction) -> bool:
-    player = await Player.get_instance(interaction)
-
-    if not player.connection:
-        await interaction.response.send_message(embed=Embed("No active player."), ephemeral=True)
-        return False
-    return True
-
-
 class Music(commands.Cog):
     @app_commands.command(name='radio')
     @app_commands.describe(url='Enter url...')
-    @app_commands.check(in_voice)
     @app_commands.guild_only()
     async def radio(
         self,
@@ -75,7 +54,6 @@ class Music(commands.Cog):
         await player.play()
 
     @app_commands.command(name='nowplaying')
-    @app_commands.check(in_voice)
     @app_commands.guild_only()
     async def nowplaying(self, interaction: discord.Interaction) -> None:
         """Displays in brief description of the current playing."""
@@ -103,14 +81,19 @@ class Music(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name='bind')
-    @app_commands.check(in_voice)
     @app_commands.guild_only()
     async def bind(self, interaction: discord.Interaction, channel: Optional[discord.VoiceChannel] = None):
         """Bind to this channel."""
 
+        channel_id = channel or (interaction.guild.voice_client.channel if interaction.guild.voice_client else None)
+
+        if not channel_id:
+            await interaction.response.send_message(embed=Embed(t('music.no_channel')), ephemeral=True)
+            return
+
         player = await Player.get_instance(interaction)
 
-        await player.settings.update({'channel_id': channel.id if channel else interaction.channel.id})
+        await player.settings.update({'channel_id':})
         await interaction.response.send_message(
             embed=Embed(t('music.channel_bind', channel=channel.mention))
         )
