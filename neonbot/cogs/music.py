@@ -45,7 +45,7 @@ class Music(commands.Cog):
         interaction: discord.Interaction,
         url: Optional[str] = None
     ):
-        """Searches the url or the keyword and add it to queue."""
+        """Plays the playlist url 24/7."""
         player = await Player.get_instance(interaction)
 
         if not url:
@@ -106,6 +106,8 @@ class Music(commands.Cog):
     @app_commands.check(in_voice)
     @app_commands.guild_only()
     async def bind(self, interaction: discord.Interaction, channel: Optional[discord.VoiceChannel] = None):
+        """Bind to this channel."""
+
         player = await Player.get_instance(interaction)
 
         await player.settings.update({'channel_id': channel.id if channel else interaction.channel.id})
