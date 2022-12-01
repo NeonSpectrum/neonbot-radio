@@ -85,15 +85,15 @@ class Music(commands.Cog):
     async def bind(self, interaction: discord.Interaction, channel: Optional[discord.VoiceChannel] = None):
         """Bind to this channel."""
 
-        channel_id = channel or (interaction.guild.voice_client.channel if interaction.guild.voice_client else None)
+        channel = channel or (interaction.guild.voice_client.channel if interaction.guild.voice_client else None)
 
-        if not channel_id:
+        if not channel:
             await interaction.response.send_message(embed=Embed(t('music.no_channel')), ephemeral=True)
             return
 
         player = await Player.get_instance(interaction)
 
-        await player.settings.update({'channel_id':})
+        await player.settings.update({'channel_id': channel.id})
         await interaction.response.send_message(
             embed=Embed(t('music.channel_bind', channel=channel.mention))
         )
