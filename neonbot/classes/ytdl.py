@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import functools
 from concurrent.futures import ThreadPoolExecutor
+from typing import Optional
 
 import yt_dlp
 
 from .ytdl_info import YtdlInfo
 from .. import bot
 from ..utils import log
-from ..utils.exceptions import YtdlError
 
 
 class Ytdl:
@@ -30,11 +30,15 @@ class Ytdl:
                 "source_address": "0.0.0.0",
                 "extractor_args": {'youtube': {'skip': ['dash', 'hls']}},
                 "outtmpl": "./tmp/youtube_dl/%(id)s",
+                "download_archive": "./tmp/youtube_dl/archive.txt",
+                "compat_opts": {
+                    "no-youtube-unavailable-videos": True
+                },
                 **extra_params,
             }
         )
 
-    async def extract_info(self, keyword: str, process: bool = False) -> YtdlInfo:
+    async def extract_info(self, keyword: str, process: bool = False) -> Optional[YtdlInfo]:
         try:
             result = await self.loop.run_in_executor(
                 self.thread_pool,
@@ -44,13 +48,11 @@ class Ytdl:
             )
 
             return YtdlInfo(result)
-        except yt_dlp.utils.YoutubeDLError as error:
+        except Exception as error:
             log.exception(error)
-            raise YtdlError(
-                "Video not available or rate limited due to many song requests. Try again later."
-            )
+            return None
 
-    async def process_entry(self, info: dict) -> YtdlInfo:
+    async def process_entry(self, info: dict) -> Optional[YtdlInfo]:
         try:
             result = await self.loop.run_in_executor(
                 self.thread_pool,
@@ -58,11 +60,9 @@ class Ytdl:
             )
 
             return YtdlInfo(result)
-        except yt_dlp.utils.YoutubeDLError as error:
+        except Exception as error:
             log.exception(error)
-            raise YtdlError(
-                "Video not available or rate limited due to many song requests. Try again later."
-            )
+            return None
 
     @classmethod
     def create(cls, extra_params) -> Ytdl:

@@ -99,6 +99,9 @@ class Player:
             self.connection.play(source, after=lambda e: self.loop.create_task(self.after(error=e)))
             self.state = PlayerState.PLAYING
 
+            if len(self.connection.channel.members) == 0:
+                self.pause()
+
         except Exception as error:
             msg = str(error)
 

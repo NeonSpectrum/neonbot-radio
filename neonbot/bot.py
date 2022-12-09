@@ -23,7 +23,10 @@ class NeonBot(commands.Bot):
         self.owner_ids = set(env.list("OWNER_IDS", default=[], subcast=int))
         self.user_agent = f"NeonBot v{__version__}"
         self.loop = asyncio.get_event_loop()
-        super().__init__(intents=discord.Intents.default(), command_prefix='.')
+
+        intents = discord.Intents.default()
+        intents.members = True
+        super().__init__(intents=intents, command_prefix='.')
 
         self.db = Database(self)
         self._settings = None

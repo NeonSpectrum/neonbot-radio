@@ -107,6 +107,9 @@ class Event(commands.Cog):
     @staticmethod
     @bot.event
     async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        if member.bot:
+            return
+
         player = Player.get_instance_from_guild(member.guild)
 
         if player and player.connection and player.connection.channel:
@@ -118,8 +121,10 @@ class Event(commands.Cog):
 
             if any(voice_members):
                 player.resume()
+                log.cmd(None, 'Player resumed.', guild=member.guild, channel=player.connection.channel, user=bot.user)
             else:
                 player.pause()
+                log.cmd(None, 'Player paused.', guild=member.guild, channel=player.connection.channel, user=bot.user)
 
 
 # noinspection PyShadowingNames

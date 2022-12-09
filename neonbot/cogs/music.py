@@ -34,27 +34,32 @@ class Music(commands.Cog):
                 await interaction.response.send_message(embed=Embed(t("music.invalid_url")), ephemeral=True)
                 return
 
+        channel_id = player.settings.get('channel_id',
+                                         interaction.user.voice.channel.id if interaction.user.voice else None)
+        channel = interaction.guild.get_channel(channel_id)
+
+        if not channel:
+            await interaction.response.send_message(embed=Embed(t('music.no_channel')), ephemeral=True)
+            return
+
         if not player.connection:
-            channel_id = player.settings.get('channel_id',
-                                             interaction.user.voice.channel.id if interaction.user.voice else None)
-            channel = interaction.guild.get_channel(channel_id)
-
-            if not channel:
-                await interaction.response.send_message(embed=Embed(t('music.no_channel')), ephemeral=True)
-                return
-
             await player.connect(channel)
-            await interaction.response.send_message(
-                embed=Embed('🔊 ' + t("music.player_connected", channel=channel.mention))
-            )
         else:
             shutil.rmtree(YOUTUBE_TMP_DIR, ignore_errors=True)
             await player.reset()
+
+        await interaction.response.send_message(
+            embed=Embed('🔊 ' + t("music.player_connected", channel=channel.mention))
+        )
 
         if re.search(YOUTUBE_REGEX, url):
             await Youtube(interaction).search_url(url)
         elif re.search(SPOTIFY_REGEX, url):
             await Spotify(interaction).search_url(url)
+
+        if len(player.queue) == 0:
+            await interaction.edit_original_response(embed=Embed(t('music.no_songs_available')))
+            return
 
         await player.settings.update({'playlist_url': url})
 
