@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from neonbot import bot
 from neonbot.classes.embed import Embed
+from neonbot.classes.player import Player
 from neonbot.models.guild import Guild
 from neonbot.utils import log, exceptions
 from neonbot.utils.functions import get_command_string
@@ -102,6 +103,23 @@ class Event(commands.Cog):
         log.info(f"Executing init for {guild}...")
         await Guild.get_instance(guild.id).create_default_collection()
         await bot.sync_command(guild)
+
+    @staticmethod
+    @bot.event
+    async def on_voice_state_update(member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        player = Player.get_instance_from_guild(member.guild)
+
+        if player and player.connection and player.connection.channel:
+            voice_members = [
+                member
+                for member in player.connection.channel.members
+                if not member.bot
+            ]
+
+            if any(voice_members):
+                player.resume()
+            else:
+                player.pause()
 
 
 # noinspection PyShadowingNames

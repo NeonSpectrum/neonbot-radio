@@ -130,6 +130,18 @@ class Player:
         self.state = PlayerState.STOPPED
         self.connection.stop()
 
+    def pause(self):
+        if self.connection.is_paused() or not self.connection.is_playing():
+            return
+
+        self.connection.pause()
+
+    def resume(self):
+        if not self.connection.is_paused():
+            return
+
+        self.connection.resume()
+
     def add_to_queue(self, data: Union[List, dict]) -> None:
         if not data:
             return
