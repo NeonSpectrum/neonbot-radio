@@ -138,12 +138,14 @@ class Player:
             return
 
         self.connection.pause()
+        log.cmd(self.ctx, 'Player paused.', channel=self.connection.channel, user=bot.user)
 
     def resume(self):
         if not self.connection.is_paused():
             return
 
         self.connection.resume()
+        log.cmd(self.ctx, 'Player resumed.', channel=self.connection.channel, user=bot.user)
 
     def add_to_queue(self, data: Union[List, dict]) -> None:
         if not data:
