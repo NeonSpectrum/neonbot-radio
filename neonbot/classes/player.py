@@ -89,12 +89,6 @@ class Player:
         try:
             if not self.now_playing.get('stream'):
                 ytdl_info = await Ytdl().process_entry(self.now_playing)
-
-                if not ytdl_info:
-                    del self.queue[self.current_queue]
-                    await self.play()
-                    return
-
                 info = ytdl_info.get_track(detailed=True)
                 self.now_playing = {**self.now_playing, **info}
 

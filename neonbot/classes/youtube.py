@@ -8,6 +8,7 @@ from neonbot.classes.player import Player
 from neonbot.classes.with_interaction import WithInteraction
 from neonbot.classes.ytdl import Ytdl
 from neonbot.utils.constants import YOUTUBE_REGEX
+from neonbot.utils.exceptions import YtdlError
 
 
 class Youtube(WithInteraction):
@@ -21,14 +22,17 @@ class Youtube(WithInteraction):
 
         player = await Player.get_instance(self.interaction)
 
-        ytdl_info = await Ytdl().extract_info(url, process=False)
+        try:
+            ytdl_info = await Ytdl().extract_info(url)
 
-        if ytdl_info.is_playlist:
-            data, error = self.remove_invalid_videos(ytdl_info.get_list())
-        else:
-            data = ytdl_info.get_track()
+            if ytdl_info.is_playlist:
+                data, error = self.remove_invalid_videos(ytdl_info.get_list())
+            else:
+                data = ytdl_info.get_track()
 
-        player.add_to_queue(data)
+            player.add_to_queue(data)
+        except YtdlError:
+            await self.send_message(embed=Embed(t('music.no_songs_available')))
 
     def remove_invalid_videos(self, data):
         error = 0

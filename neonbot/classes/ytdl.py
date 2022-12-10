@@ -9,6 +9,7 @@ import yt_dlp
 from .ytdl_info import YtdlInfo
 from .. import bot
 from ..utils import log
+from ..utils.exceptions import YtdlError
 
 
 class Ytdl:
@@ -24,7 +25,6 @@ class Ytdl:
                 "quiet": True,
                 "nocheckcertificate": True,
                 "ignoreerrors": False,
-                "extract_flat": "in_playlist",
                 "geo_bypass": True,
                 "geo_bypass_country": "PH",
                 "source_address": "0.0.0.0",
@@ -37,19 +37,19 @@ class Ytdl:
             }
         )
 
-    async def extract_info(self, keyword: str, process: bool = False) -> Optional[YtdlInfo]:
+    async def extract_info(self, keyword: str) -> Optional[YtdlInfo]:
         try:
             result = await self.loop.run_in_executor(
                 self.thread_pool,
                 functools.partial(
-                    self.ytdl.extract_info, keyword, download=False, process=process
+                    self.ytdl.extract_info, keyword, download=False, process=True
                 ),
             )
 
             return YtdlInfo(result)
         except Exception as error:
             log.exception(error)
-            return None
+            raise YtdlError(error)
 
     async def process_entry(self, info: dict) -> Optional[YtdlInfo]:
         try:
@@ -61,7 +61,7 @@ class Ytdl:
             return YtdlInfo(result)
         except Exception as error:
             log.exception(error)
-            return None
+            raise YtdlError(error)
 
     @classmethod
     def create(cls, extra_params) -> Ytdl:
