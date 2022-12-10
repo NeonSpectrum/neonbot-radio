@@ -1,6 +1,6 @@
 import asyncio
 from time import time
-from typing import Optional, Tuple
+from typing import Optional
 from urllib.parse import urlparse
 
 import discord
@@ -92,7 +92,7 @@ class Spotify(WithInteraction):
     async def get_track(self) -> dict:
         return await self.request(self.url_prefix + '/' + self.id)
 
-    async def get_playlist(self) -> Tuple[list, dict]:
+    async def get_playlist(self) -> list:
         playlist = []
 
         if self.type == "album":
@@ -101,7 +101,6 @@ class Spotify(WithInteraction):
             limit = 100
 
         offset = 0
-        playlist_info = await self.get_playlist_info()
 
         while True:
             data = await self.request(
@@ -119,7 +118,7 @@ class Spotify(WithInteraction):
 
             offset += limit
 
-        return playlist, playlist_info
+        return playlist
 
     async def request(self, url: str, params: dict = None):
         token = await self.get_token()
@@ -142,13 +141,12 @@ class Spotify(WithInteraction):
         player = await Player.get_instance(self.interaction)
 
         playlist = []
-        playlist_info = None
 
         self.id = url['id']
         self.type = url['type']
 
         if self.is_playlist or self.is_album:
-            playlist, playlist_info = await self.get_playlist()
+            playlist = await self.get_playlist()
         else:
             playlist.append(await self.get_track())
 

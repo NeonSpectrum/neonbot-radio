@@ -110,6 +110,9 @@ class Event(commands.Cog):
         if member.bot:
             return
 
+        if before.channel == after.channel:
+            return
+
         player = Player.get_instance_from_guild(member.guild)
 
         if player and player.connection and player.connection.channel:
@@ -121,10 +124,8 @@ class Event(commands.Cog):
 
             if any(voice_members):
                 player.resume()
-                log.cmd(None, 'Player resumed.', guild=member.guild, channel=player.connection.channel, user=bot.user)
             else:
                 player.pause()
-                log.cmd(None, 'Player paused.', guild=member.guild, channel=player.connection.channel, user=bot.user)
 
 
 # noinspection PyShadowingNames

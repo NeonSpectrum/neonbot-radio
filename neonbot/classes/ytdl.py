@@ -20,7 +20,7 @@ class Ytdl:
         self.ytdl = yt_dlp.YoutubeDL(
             {
                 "default_search": "ytsearch5",
-                "format": "95/bestaudio/best/worst",
+                "format": "bestaudio/91/92/93/94/95/best/worst",
                 "quiet": True,
                 "nocheckcertificate": True,
                 "ignoreerrors": False,
@@ -28,7 +28,6 @@ class Ytdl:
                 "geo_bypass": True,
                 "geo_bypass_country": "PH",
                 "source_address": "0.0.0.0",
-                "extractor_args": {'youtube': {'skip': ['dash', 'hls']}},
                 "outtmpl": "./tmp/youtube_dl/%(id)s",
                 "download_archive": "./tmp/youtube_dl/archive.txt",
                 "compat_opts": {
@@ -56,7 +55,7 @@ class Ytdl:
         try:
             result = await self.loop.run_in_executor(
                 self.thread_pool,
-                functools.partial(self.ytdl.process_ie_result, info, download=True),
+                functools.partial(self.ytdl.process_ie_result, info, download=not info.get('is_live')),
             )
 
             return YtdlInfo(result)
