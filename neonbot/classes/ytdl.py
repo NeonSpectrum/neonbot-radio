@@ -24,7 +24,7 @@ class Ytdl:
                 "format": "bestaudio/91/92/93/94/95/best/worst",
                 "quiet": True,
                 "nocheckcertificate": True,
-                "ignoreerrors": False,
+                "ignoreerrors": True,
                 "geo_bypass": True,
                 "geo_bypass_country": "PH",
                 "source_address": "0.0.0.0",

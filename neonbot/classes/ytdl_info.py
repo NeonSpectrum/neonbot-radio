@@ -1,10 +1,14 @@
 from datetime import datetime
 
+from neonbot.utils.exceptions import YtdlError
 from neonbot.utils.functions import format_seconds
 
 
 class YtdlInfo:
     def __init__(self, result):
+        if not result:
+            raise YtdlError('Video unavailable.')
+
         self.result = result
 
     @property
