@@ -52,7 +52,7 @@ class YtdlInfo:
             title=entry.get("title", "*Not Available*"),
             duration=entry.get("duration"),
             url='https://www.youtube.com/watch?v=' + entry.get('id'),
-            is_live=entry.get('live_status') == 'is_live'
+            is_live=entry.get('live_status') == 'is_live' or entry.get('is_live', False)
         )
 
     def format_detailed_result(self, entry: dict) -> dict:
