@@ -4,3 +4,11 @@ class YtdlError(Exception):
 
 class ApiError(Exception):
     pass
+
+
+class YoutubeError(Exception):
+    pass
+
+
+class SpotifyError(Exception):
+    pass

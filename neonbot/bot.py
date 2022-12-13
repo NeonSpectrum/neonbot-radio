@@ -4,16 +4,19 @@ import sys
 from glob import glob
 from os import sep
 from time import time
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, List
 
 import discord
 from aiohttp import ClientSession, ClientTimeout
 from discord.ext import commands
 from discord.utils import oauth_url
 from envparse import env
+from i18n import t
 
 from . import __version__
 from .classes.database import Database
+from .classes.embed import Embed
+from .models.guild import Guild
 from .utils import log
 from .utils.constants import PERMISSIONS
 
@@ -60,12 +63,13 @@ class NeonBot(commands.Bot):
 
         guilds = [guild async for guild in self.fetch_guilds()]
 
-        await self.sync_command()
+        # await self.sync_command()
 
         # This copies the global commands over to your guild.
-        await asyncio.gather(*[self.sync_command(guild) for guild in guilds])
+        # await asyncio.gather(*[self.sync_command(guild) for guild in guilds])
 
         await self.db.get_guilds(guilds)
+        self.loop.create_task(self.autoplay(guilds))
 
     async def sync_command(self, guild: Optional[discord.Guild] = None):
         await self.tree.sync(guild=guild)
@@ -98,6 +102,25 @@ class NeonBot(commands.Bot):
         )
         await message.channel.send(f"Bot invite link: {url}")
         log.info(f"Sent an invite link to: {message.author}")
+
+    async def autoplay(self, guilds: List[discord.Guild]):
+        from .classes.player import Player
+
+        await self.wait_until_ready()
+
+        for guild in guilds:
+            settings = Guild.get_instance(guild.id)
+            channel = await self.fetch_channel(settings.get('channel_id'))
+
+            if not channel:
+                continue
+
+            if settings.get('autostart'):
+                log.info('Executing autoplay for guild: ' + str(guild))
+                message = await channel.send(embed=Embed('🔊 ' + t('music.autostart_started')), delete_after=5)
+                ctx = await self.get_context(message)
+                player = Player.get_instance_from_context(ctx)
+                await player.autoplay(channel)
 
     async def send_response(self, interaction: discord.Interaction, *args, **kwargs):
         if not interaction.response.is_done():

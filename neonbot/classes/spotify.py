@@ -3,27 +3,22 @@ from time import time
 from typing import Optional
 from urllib.parse import urlparse
 
-import discord
 from envparse import env
 from i18n import t
 
-from .embed import Embed
-from .player import Player
-from .with_interaction import WithInteraction
 from .ytdl import Ytdl
 from .. import bot
-from ..utils.exceptions import ApiError, YtdlError
+from ..utils.exceptions import ApiError, YtdlError, SpotifyError
 
 
-class Spotify(WithInteraction):
+class Spotify:
     CREDENTIALS = {
         'token': None,
         'expiration': 0
     }
     BASE_URL = "https://api.spotify.com/v1"
 
-    def __init__(self, interaction: discord.Interaction) -> None:
-        super().__init__(interaction)
+    def __init__(self) -> None:
         self.client_id = env.str("SPOTIFY_CLIENT_ID")
         self.client_secret = env.str("SPOTIFY_CLIENT_SECRET")
 
@@ -135,10 +130,7 @@ class Spotify(WithInteraction):
         url = self.parse_url(url)
 
         if not url:
-            await self.send_message(embed=Embed(t('music.invalid_spotify_url')), ephemeral=True)
-            return
-
-        player = await Player.get_instance(self.interaction)
+            raise SpotifyError(t('music.invalid_spotify_url'))
 
         playlist = []
 
@@ -151,16 +143,14 @@ class Spotify(WithInteraction):
             playlist.append(await self.get_track())
 
         if len(playlist) == 0:
-            await self.send_message(embed=Embed(t('music.youtube_no_song')))
-            return
+            raise SpotifyError(t('music.youtube_no_song'))
 
         data = await self.process_playlist(playlist)
 
         if len(data) == 0:
-            await self.send_message(embed=Embed(t('music.youtube_failed_to_find_similar')))
-            return
+            raise SpotifyError(t('music.youtube_failed_to_find_similar'))
 
-        player.add_to_queue(data)
+        return data
 
     async def get_playlist_info(self):
         uploader = None

@@ -45,7 +45,7 @@ class Database:
 
         return self.settings
 
-    async def get_guilds(self, guilds: list) -> None:
+    async def get_guilds(self, guilds: List[discord.Guild]) -> None:
         guild_ids = [str(guild.id) for guild in guilds]
         existing_guild_ids = [guild["server_id"] async for guild in
                               self.client.servers.find({"server_id": {"$in": guild_ids}})]

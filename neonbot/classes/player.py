@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import random
+import re
 from typing import Union, List, Optional
 
 import discord
@@ -13,7 +15,7 @@ from neonbot.classes.ytdl import Ytdl
 from neonbot.enums.player_state import PlayerState
 from neonbot.models.guild import Guild
 from neonbot.utils import log
-from neonbot.utils.constants import FFMPEG_OPTIONS
+from neonbot.utils.constants import FFMPEG_OPTIONS, YOUTUBE_REGEX, SPOTIFY_REGEX
 from neonbot.utils.exceptions import YtdlError
 
 
@@ -38,7 +40,16 @@ class Player:
 
     @staticmethod
     async def get_instance(interaction: discord.Interaction) -> Player:
-        ctx = await bot.get_context(interaction)
+        guild_id = interaction.guild.id
+
+        if guild_id not in Player.servers.keys():
+            ctx = await bot.get_context(interaction)
+            Player.servers[guild_id] = Player(ctx)
+
+        return Player.servers[guild_id]
+
+    @staticmethod
+    def get_instance_from_context(ctx: commands.Context) -> Player:
         guild_id = ctx.guild.id
 
         if guild_id not in Player.servers.keys():
@@ -156,3 +167,28 @@ class Player:
 
         for info in data:
             self.queue.append(info)
+
+    async def autoplay(self, channel):
+        from neonbot.classes.spotify import Spotify
+        from neonbot.classes.youtube import Youtube
+
+        data = None
+        url = self.settings.get('playlist_url')
+
+        if not url:
+            return
+
+        await self.connect(channel)
+
+        if re.search(YOUTUBE_REGEX, url):
+            data = await Youtube().search_url(url)
+        elif re.search(SPOTIFY_REGEX, url):
+            data = await Spotify().search_url(url)
+
+        self.add_to_queue(data)
+
+        if len(self.queue) == 0:
+            return
+
+        random.shuffle(self.queue)
+        await self.play()

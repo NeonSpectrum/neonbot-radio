@@ -26,6 +26,7 @@ class Music(commands.Cog):
     ):
         """Plays the playlist url 24/7."""
         player = await Player.get_instance(interaction)
+        data = None
 
         if not url:
             if player.settings.get('playlist_url'):
@@ -44,18 +45,24 @@ class Music(commands.Cog):
 
         if not player.connection:
             await player.connect(channel)
+
+            await interaction.response.send_message(
+                embed=Embed('🔊 ' + t("music.player_connected", channel=channel.mention))
+            )
         else:
             shutil.rmtree(YOUTUBE_TMP_DIR, ignore_errors=True)
             await player.reset()
 
-        await interaction.response.send_message(
-            embed=Embed('🔊 ' + t("music.player_connected", channel=channel.mention))
-        )
+            await interaction.response.send_message(
+                embed=Embed('🔊 ' + t("music.radio_changed"))
+            )
 
         if re.search(YOUTUBE_REGEX, url):
-            await Youtube(interaction).search_url(url)
+            data = await Youtube().search_url(url)
         elif re.search(SPOTIFY_REGEX, url):
-            await Spotify(interaction).search_url(url)
+            data = await Spotify().search_url(url)
+
+        player.add_to_queue(data)
 
         if len(player.queue) == 0:
             await interaction.edit_original_response(embed=Embed(t('music.no_songs_available')))
@@ -109,6 +116,17 @@ class Music(commands.Cog):
         await player.settings.update({'channel_id': channel.id})
         await interaction.response.send_message(
             embed=Embed('🔊 ' + t('music.channel_bind', channel=channel.mention))
+        )
+
+    @app_commands.command(name='autostart')
+    @app_commands.guild_only()
+    async def autostart(self, interaction: discord.Interaction, value: bool):
+        """Autostart music after bot restart."""
+        player = await Player.get_instance(interaction)
+
+        await player.settings.update({'autostart': value})
+        await interaction.response.send_message(
+            embed=Embed('🔊 ' + t('music.autostart', value=value))
         )
 
 

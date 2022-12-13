@@ -22,7 +22,7 @@ class Event(commands.Cog):
     @staticmethod
     @bot.event
     async def on_disconnect() -> None:
-        # log.warn("Disconnected!")
+        log.warn("Disconnected!")
         pass
 
     @staticmethod
