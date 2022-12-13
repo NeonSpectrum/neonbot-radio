@@ -38,6 +38,14 @@ class Player:
     def connection(self) -> Optional[discord.VoiceClient]:
         return self.ctx.voice_client
 
+    @property
+    def channel_members(self):
+        return [
+            member
+            for member in self.connection.channel.members
+            if not member.bot
+        ]
+
     @staticmethod
     async def get_instance(interaction: discord.Interaction) -> Player:
         guild_id = interaction.guild.id
@@ -110,7 +118,7 @@ class Player:
             self.connection.play(source, after=lambda e: self.loop.create_task(self.after(error=e)))
             self.state = PlayerState.PLAYING
 
-            if len(self.connection.channel.members) == 0:
+            if len(self.channel_members) == 0:
                 self.pause()
 
         except Exception as error:
