@@ -120,6 +120,7 @@ class Music(commands.Cog):
 
     @app_commands.command(name='autostart')
     @app_commands.guild_only()
+    @app_commands.default_permissions(administrator=True)
     async def autostart(self, interaction: discord.Interaction, value: bool):
         """Autostart music after bot restart."""
         player = await Player.get_instance(interaction)
