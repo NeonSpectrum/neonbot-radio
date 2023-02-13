@@ -14,11 +14,11 @@ yt-dlp = "*"
 pytz = "*"
 envparse = "*"
 bs4 = "*"
-discord-py = {git = "https://github.com/Rapptz/discord.py"}
 jikanpy = "*"
 fuzzywuzzy = "*"
 python-levenshtein = "*"
 psutil = "*"
+"discord.py" = {extras = ["voice"], version = "*"}
 
 [dev-packages]
 pylint = "*"
