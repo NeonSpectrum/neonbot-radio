@@ -21,7 +21,7 @@ class Ytdl:
         self.ytdl = yt_dlp.YoutubeDL(
             {
                 "default_search": "ytsearch5",
-                "format": "bestaudio/91/92/93/94/95/best/worst",
+                "format": "(bestaudio/91/92/93/94/95/best/worst)[height<=360]",
                 "quiet": True,
                 "nocheckcertificate": True,
                 "ignoreerrors": True,
